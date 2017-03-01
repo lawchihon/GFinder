@@ -89,9 +89,18 @@ class GithubRepo: CustomStringConvertible {
             q = q + searchString
         }
         q = q + " stars:>\(settings.minStars)"
+
+        if settings.filterLanguages {
+            for (language, selected) in settings.languages {
+                if selected {
+                    q = q + " language:\(language)"
+                }
+            }
+        }
+        
         params["q"] = q
         
-        params["sort"] = "stars"
+        params["sort"] = settings.sorts[settings.sortSelect]
         params["order"] = "desc"
         
         return params

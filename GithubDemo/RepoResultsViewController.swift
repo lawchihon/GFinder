@@ -48,10 +48,6 @@ class RepoResultsViewController: UIViewController {
         // Perform request to GitHub API to get the list of repositories
         GithubRepo.fetchRepos(searchSettings, successCallback: { (newRepos) -> Void in
 
-            // Print the returned repositories to the output window
-            for repo in newRepos {
-                print(repo)
-            }
             self.repos = newRepos
             self.tableView.reloadData()
 
@@ -78,6 +74,7 @@ extension RepoResultsViewController: UISearchBarDelegate {
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         searchBar.text = ""
         searchBar.resignFirstResponder()
+        doSearch()
     }
 
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
@@ -97,6 +94,7 @@ extension RepoResultsViewController: UITableViewDelegate, UITableViewDataSource 
         cell.starLabel.text = "\(repo.stars!)"
         cell.forkLabel.text = "\(repo.forks!)"
         cell.repoDescription.text = repo.repoDescription
+        cell.ownerLabel.text = repo.ownerHandle
 
         let imageUrl = URL(string: repo.ownerAvatarURL!)
         let imageRequest = URLRequest(url: imageUrl!)
@@ -135,5 +133,24 @@ extension RepoResultsViewController: UITableViewDelegate, UITableViewDataSource 
         }
         return 0
     }
-
 }
+
+extension RepoResultsViewController: SettingsPresentingViewControllerDelegate {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        let navController = segue.destination as! UINavigationController
+        let vc = navController.topViewController as! SearchSettingsViewController
+        vc.settings = searchSettings // ... Search Settings ...
+        vc.delegate = self
+    }
+
+    func didSaveSettings(settings: GithubRepoSearchSettings) {
+        self.searchSettings = settings
+        dismiss(animated: true, completion: nil)
+        doSearch()
+    }
+    
+    func didCancelSettings() {
+        dismiss(animated: true, completion: nil)
+    }
+}
+
